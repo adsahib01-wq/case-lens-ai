@@ -321,7 +321,7 @@ Automated unit and integration test coverage is still being expanded via Jest.
 
 ## License
 
-Copyright © 2026 Muhammad Nadeem Murtaza.
+Copyright © 2026 Shahzaib.
 
 No licence has been granted for redistribution or commercial use unless a separate `LICENSE` file states otherwise.
 
