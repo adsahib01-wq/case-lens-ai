@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const ai = new OpenAI({ 
-  apiKey: process.env.GROQ_API_KEY || "",
-  baseURL: "https://api.groq.com/openai/v1"
-});
-
 export async function POST(req: Request) {
   try {
+    const ai = new OpenAI({ 
+      apiKey: process.env.GROQ_API_KEY || "",
+      baseURL: "https://api.groq.com/openai/v1"
+    });
+
     const { incorrectAttempts, conceptArray } = await req.json();
 
     const prompt = `You are an expert medical tutor. The student has requested an overall analysis of their performance across multiple medical case studies.
