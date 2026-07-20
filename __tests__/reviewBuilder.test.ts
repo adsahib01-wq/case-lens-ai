@@ -10,29 +10,37 @@ describe("buildQuestionReviewAnalysis", () => {
     correctAnswerExplanation: "Because it's correct",
     primaryConceptId: "concept1",
     primaryConceptLabel: "Test Concept",
-    difficulty: "intermediate",
+    difficulty: "Intermediate",
     highYieldTakeaway: "Takeaway",
     reasoningSteps: ["Step 1", "Step 2"],
     options: [
       { id: "opt1", label: "A", text: "Correct Option", isCorrect: true, explanation: "Correct explanation" },
       { id: "opt2", label: "B", text: "Wrong Option", isCorrect: false, explanation: "Wrong explanation", misconception: "Common Trap", whenItCouldBeCorrect: "If condition X" }
-    ]
+    ],
+    caseEvidence: [],
+    conceptTags: [],
+    examStyle: "General"
   };
 
   const mockAttempt: QuestionAttempt = {
     questionId: "q1",
     selectedOptionId: "opt2",
+    isCorrect: false,
     attemptNumber: 1,
     timeSpentSeconds: 45,
-    timestamp: Date.now(),
+    answeredAt: new Date().toISOString(),
     hintsUsed: 0,
-    confidence: "high"
+    confidence: "High"
   };
 
   const mockSession: PracticeSession = {
     id: "s1",
-    startedAt: Date.now(),
-    status: "in_progress",
+    caseId: "case1",
+    questionIds: ["q1"],
+    timerConfig: { mode: "none" },
+    currentQuestionIndex: 0,
+    startedAt: new Date().toISOString(),
+    status: "in-progress",
     attempts: [],
     mode: "learning"
   };
@@ -43,7 +51,7 @@ describe("buildQuestionReviewAnalysis", () => {
     expect(analysis.status).toBe("incorrect");
     expect(analysis.correctOptionId).toBe("opt1");
     expect(analysis.selectedOptionId).toBe("opt2");
-    expect(analysis.confidenceInsight).toContain("High confidence in an incorrect answer");
+    expect(analysis.confidenceInsight).toContain("You selected an incorrect answer with high confidence");
     expect(analysis.selectedAnswerExplanation).toBe("Wrong explanation");
     expect(analysis.highYieldTakeaway).toBe("Takeaway");
     expect(analysis.reasoningFramework).toEqual(["Step 1", "Step 2"]);
@@ -53,14 +61,14 @@ describe("buildQuestionReviewAnalysis", () => {
   });
 
   it("should generate a correct analysis for a correct attempt", () => {
-    const correctAttempt = { ...mockAttempt, selectedOptionId: "opt1", confidence: "low" as const };
+    const correctAttempt = { ...mockAttempt, isCorrect: true, selectedOptionId: "opt1", confidence: "Low" as const };
     const analysis = buildQuestionReviewAnalysis(mockQuestion, correctAttempt, mockSession);
     
     expect(analysis.status).toBe("correct");
     expect(analysis.correctOptionId).toBe("opt1");
     expect(analysis.selectedOptionId).toBe("opt1");
-    expect(analysis.confidenceInsight).toContain("Correct, but your low confidence");
-    expect(analysis.selectedAnswerExplanation).toBeUndefined();
+    expect(analysis.confidenceInsight).toContain("You selected the correct answer with low confidence");
+    expect(analysis.selectedAnswerExplanation).toBe("Correct explanation");
   });
 
   it("should map adaptive recommendations properly", () => {
@@ -68,16 +76,18 @@ describe("buildQuestionReviewAnalysis", () => {
       id: "ad1",
       decisionKey: "concept1-intermediate",
       conceptId: "concept1",
-      previousDifficulty: "intermediate",
-      nextDifficulty: "beginner",
+      sourceSessionId: "session1",
+      previousDifficulty: "Intermediate",
+      recommendedDifficulty: "Basic",
       decision: "decrease",
       purpose: "misconception-correction",
-      timestamp: Date.now(),
+      reasonCode: "repeated-incorrect",
+      createdAt: new Date().toISOString(),
       evidenceAttemptIds: ["q1"],
-      stateSnapshot: {}
+      ruleVersion: 1
     };
 
     const analysis = buildQuestionReviewAnalysis(mockQuestion, mockAttempt, mockSession, adaptiveDecision);
-    expect(analysis.adaptiveRecommendation).toContain("A beginner question is recommended next");
+    expect(analysis.adaptiveRecommendation).toContain("A Basic question is recommended next");
   });
 });

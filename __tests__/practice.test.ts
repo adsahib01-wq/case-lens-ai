@@ -11,6 +11,7 @@ describe("Practice Mode and Session Management", () => {
       id: "legacy-1",
       title: "Legacy Case",
       content: "Content",
+      createdAt: Date.now(),
       questions: [
         {
           id: "q1",
@@ -23,7 +24,7 @@ describe("Practice Mode and Session Management", () => {
       ],
       answers: { "q1": "opt1" },
       attempts: [
-        { questionId: "q1", selectedOptionId: "opt1", confidence: "High", submittedAt: new Date().toISOString() }
+        { questionId: "q1", selectedOptionId: "opt1", confidence: "High", answeredAt: new Date().toISOString(), isCorrect: true, attemptNumber: 1 }
       ],
       score: 1,
     });
@@ -48,6 +49,7 @@ describe("Practice Mode and Session Management", () => {
       id: "exam-case-1",
       title: "Exam Case",
       content: "Content",
+      createdAt: Date.now(),
       questions: [
         {
           id: "q1",
@@ -78,6 +80,7 @@ describe("Practice Mode and Session Management", () => {
       id: "flow-case",
       title: "Flow Case",
       content: "Content",
+      createdAt: Date.now(),
       questions: [
         {
           id: "q1",
@@ -99,14 +102,16 @@ describe("Practice Mode and Session Management", () => {
       questionId: "q1",
       selectedOptionId: "opt1",
       confidence: "High",
-      submittedAt: new Date().toISOString()
+      isCorrect: true,
+      attemptNumber: 1,
+      answeredAt: new Date().toISOString()
     });
 
     state = useCaseStore.getState();
     session = getPracticeSessions(state.cases.find(c => c.id === "flow-case")!)[0];
     expect(session.attempts.length).toBe(1);
 
-    completePracticeSession("flow-case", sessionId, "manual-completion");
+    completePracticeSession("flow-case", sessionId, "all-questions-completed");
 
     state = useCaseStore.getState();
     session = getPracticeSessions(state.cases.find(c => c.id === "flow-case")!)[0];
@@ -121,13 +126,14 @@ describe("Practice Mode and Session Management", () => {
       id: "retake-case",
       title: "Retake Case",
       content: "Content",
+      createdAt: Date.now(),
       questions: []
     });
 
     // Session 1
     const s1 = createPracticeSession("retake-case", "learning", { mode: "none" });
     startPracticeSession("retake-case", s1);
-    completePracticeSession("retake-case", s1, "manual-completion");
+    completePracticeSession("retake-case", s1, "user-ended-session");
 
     // Session 2 (Retake)
     const s2 = createPracticeSession("retake-case", "exam", { mode: "per-question", secondsPerQuestion: 30 });

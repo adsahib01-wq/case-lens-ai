@@ -95,20 +95,21 @@ describe("Differential Builder Store Actions", () => {
       submittedAt: "2023-01-01",
     });
 
-    const comparison = {
-      overlapSummary: "Overlap",
+    const mockComparison = {
+      overlapSummary: "summary",
       alignedReasoning: [],
       missingConsiderations: [],
       unsupportedAssumptions: [],
       evidenceUseAnalysis: [],
       learningPriorities: [],
+      generatedAt: new Date().toISOString()
     };
 
-    useCaseStore.getState().saveDifferentialComparison("case-1", comparison);
+    useCaseStore.getState().saveDifferentialComparison("case-1", mockComparison);
 
     const updatedCase = useCaseStore.getState().cases[0];
     expect(updatedCase.differentialSubmission?.status).toBe("comparison-complete");
-    expect(updatedCase.differentialSubmission?.comparison).toEqual(comparison);
+    expect(updatedCase.differentialSubmission?.comparison).toEqual(mockComparison);
   });
 
   it("should mark differential comparison as failed", () => {

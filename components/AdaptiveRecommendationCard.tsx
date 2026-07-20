@@ -1,7 +1,7 @@
 "use client";
 
 import { AdaptiveDecision } from "@/lib/store";
-import { getAdaptiveDecisionExplanation } from "@/lib/adaptive";
+import { getAdaptiveDecisionExplanation } from "@/lib/adaptive/engine";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -26,7 +26,7 @@ export function AdaptiveRecommendationCard({
           Adaptive Review: {decision.conceptId.split('.').pop()?.replace(/-/g, ' ')}
         </h3>
         <span className="text-xs font-bold px-2 py-1 bg-[var(--surface-secondary)] text-[var(--text-secondary)] rounded">
-          {decision.nextDifficulty}
+          {decision.recommendedDifficulty}
         </span>
       </div>
       

@@ -78,12 +78,13 @@ Save or print educational reports
 | One-question-at-a-time practice | Available | Local persistence |
 | Question-by-question results | Available | Stored question explanations |
 | Printable reports | Available | PDF output via browser |
-| Confidence rating | In progress | Low, Moderate, High |
-| Differential Diagnosis Builder | In progress | Pre-analysis reasoning |
-| Progressive Case Reveal | In progress | Staged case reasoning |
-| Learning Mode | In progress | Immediate feedback |
-| Exam Mode | In progress | Delayed feedback |
-| Adaptive Difficulty | Planned | Deterministic local engine |
+| Confidence rating | Available | Low, Moderate, High |
+| Differential Diagnosis Builder | Available | Pre-analysis reasoning |
+| Progressive Case Reveal | Available | Staged case reasoning |
+| Learning Mode | Available | Immediate feedback |
+| Exam Mode | Available | Delayed feedback |
+| Adaptive Difficulty | Available | Deterministic local engine |
+| Master Weak Concepts Dashboard | Available | Cross-session aggregation |
 | IndexedDB migration | Planned | Replaces monolithic persistence |
 | Cloud synchronization | Future | Not currently available |
 | Medical source ingestion | Future | Requires licensing and review |

@@ -67,12 +67,12 @@ function FullReportContent() {
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-bold">Concept: {decision.conceptId.split('.').pop()?.replace(/-/g, ' ')}</h3>
                   <span className="bg-white px-2 py-1 rounded text-sm font-bold shadow-sm">
-                    {decision.previousDifficulty} → {decision.nextDifficulty}
+                    {decision.previousDifficulty} → {decision.recommendedDifficulty}
                   </span>
                 </div>
                 <p className="text-sm text-gray-700 mb-2"><strong>Reason:</strong> {decision.reasonCode.replace(/-/g, ' ')}</p>
                 <p className="text-sm text-gray-700 mb-2"><strong>Focus:</strong> {decision.purpose.replace(/-/g, ' ')}</p>
-                <p className="text-xs text-gray-500">Based on {decision.evidenceCount} recent attempts.</p>
+                <p className="text-xs text-gray-500">Based on {decision.evidenceAttemptIds.length} recent attempts.</p>
               </div>
             ))}
           </div>

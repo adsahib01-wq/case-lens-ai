@@ -160,7 +160,7 @@ function getEvidenceSummary(decision: AdaptiveDecision): string {
 
 function getAdaptiveRecommendationString(decision: AdaptiveDecision): string {
   const currentDiff = decision.previousDifficulty;
-  const nextDiff = decision.nextDifficulty;
+  const nextDiff = decision.recommendedDifficulty;
   
   if (decision.decision === "increase") {
     return `The available evidence supports trying an ${nextDiff} question next.`;

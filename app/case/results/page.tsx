@@ -8,7 +8,6 @@ import { getApiUrl } from "@/lib/api-client";
 import PieChart from "@/components/PieChart";
 import { calculateConfidenceSummary, getConfidenceCalibration, getConfidenceInsight } from "@/lib/confidenceUtils";
 import { getPracticeSessions, AdaptiveDecision, QuestionAttempt, getLatestSession, QuestionReviewAnalysis } from "@/lib/store";
-import { decideNextDifficulty, extractEligibleAdaptiveEvidence, createAdaptiveDecisionKey } from "@/lib/adaptive";
 import { AdaptiveRecommendationCard } from "@/components/AdaptiveRecommendationCard";
 import { QuestionReviewCard } from "@/components/QuestionReviewCard";
 import { buildQuestionReviewAnalysis } from "@/lib/reviewBuilder";
@@ -67,79 +66,13 @@ function IndividualResultsPageContent() {
     return getLatestSession(currentCase);
   }, [currentCase, urlSessionId]);
 
-  // 1. Local Adaptive Decision Calculation (Idempotent)
+  // 1. Local Adaptive Decision Render
   useEffect(() => {
     if (mounted && currentCase && currentCase.adaptiveDifficultyEnabled && !isLegacy && latestSession?.status === "completed") {
-      const mcqs = currentCase.mcqs || [];
-      const newDecisions: AdaptiveDecision[] = [];
-
-      // Extract unique concept IDs tested in this session
-      const testedConceptIds = new Set<string>();
-      latestSession.attempts.forEach(a => {
-        const q = mcqs.find(mq => mq.id === a.questionId);
-        if (q?.conceptTags?.[0]?.conceptId) {
-          testedConceptIds.add(q.conceptTags[0].conceptId);
-        }
-      });
-
-      // Calculate decisions for each tested concept
-      testedConceptIds.forEach(conceptId => {
-        const allAttempts = currentCase.attempts || [];
-        const evidence = extractEligibleAdaptiveEvidence(allAttempts, mcqs, conceptId);
-        
-        // Find current difficulty for this concept from the most recent attempt
-        const recentAttempt = evidence[evidence.length - 1];
-        if (!recentAttempt) return;
-
-        const result = decideNextDifficulty({
-          currentDifficulty: recentAttempt.difficulty,
-          conceptId,
-          recentEvidence: evidence
-        });
-
-        // Only create a decision if it's actionable (not insufficient-evidence)
-        if (result.reasonCode !== "insufficient-evidence") {
-          const attemptIds = evidence.map(e => e.attemptId);
-          const decisionKey = createAdaptiveDecisionKey(conceptId, recentAttempt.difficulty, attemptIds);
-          
-          const decision: AdaptiveDecision = {
-            id: crypto.randomUUID(),
-            decisionKey,
-            conceptId,
-            previousDifficulty: recentAttempt.difficulty,
-            nextDifficulty: result.nextDifficulty,
-            decision: result.decision,
-            purpose: result.purpose,
-            reasonCode: result.reasonCode,
-            evidenceAttemptIds: attemptIds,
-            evidenceCount: evidence.length,
-            ruleVersion: 1,
-            createdAt: new Date().toISOString()
-          };
-
-          // Save globally (it handles idempotency internally via decisionKey)
-          saveAdaptiveDecision(currentCase.id, decision);
-          newDecisions.push(decision);
-        }
-      });
-
-      // Update local state to reflect the latest decisions for rendering
-      // We also look at existing globally saved decisions that match our current calculation
-      const activeDecisions = (currentCase.adaptiveDecisions || []).filter(d => 
-        newDecisions.some(nd => nd.decisionKey === d.decisionKey)
-      );
-      
-      // If we found any new ones that weren't in state yet, merge them
-      const allActiveDecisions = [...activeDecisions];
-      newDecisions.forEach(nd => {
-        if (!allActiveDecisions.some(d => d.decisionKey === nd.decisionKey)) {
-          allActiveDecisions.push(nd);
-        }
-      });
-
-      setAdaptiveDecisions(allActiveDecisions);
+      const activeDecisions = (currentCase.adaptiveDecisions || []).filter(d => d.sourceSessionId === latestSession.id);
+      setAdaptiveDecisions(activeDecisions);
     }
-  }, [mounted, currentCase?.id, latestSession?.status, isLegacy, saveAdaptiveDecision]);
+  }, [mounted, currentCase?.adaptiveDecisions, latestSession?.status, latestSession?.id, isLegacy]);
 
   if (!mounted) return null;
 
@@ -190,15 +123,16 @@ function IndividualResultsPageContent() {
         body: JSON.stringify({
           text: currentCase.content,
           analysis: currentCase.analysis,
-          difficulty: decision.nextDifficulty,
+          difficulty: decision.recommendedDifficulty,
           examStyle: currentCase.examStyle || "General",
           questionCount: 3, // Batch of 3 for adaptive sessions
           adaptiveContext: {
             conceptId: decision.conceptId,
-            targetDifficulty: decision.nextDifficulty,
+            targetDifficulty: decision.recommendedDifficulty,
             questionPurpose: decision.purpose
           },
-          avoidQuestionIds
+          avoidQuestionIds,
+          recentQuestions: currentCase.mcqs?.slice(-10) || []
         })
       });
 
@@ -218,7 +152,7 @@ function IndividualResultsPageContent() {
         "adaptive-review",
         {
           conceptId: decision.conceptId,
-          targetDifficulty: decision.nextDifficulty,
+          targetDifficulty: decision.recommendedDifficulty,
           questionPurpose: decision.purpose,
           sourceDecisionId: decision.id
         }
@@ -378,10 +312,38 @@ function IndividualResultsPageContent() {
         </div>
       )}
 
-      {!isLegacy && analysisResult && (
+      {!isLegacy && (
         <div className="mb-12">
-          <h2 className="mb-6">Performance Breakdown</h2>
-          
+          <div className="p-4 mb-6 bg-gray-100 rounded text-xs overflow-auto text-black">
+            <strong>Adaptive Engine Debug Info:</strong><br/>
+            - adaptiveDifficultyEnabled: {currentCase.adaptiveDifficultyEnabled ? 'true' : 'false'}<br/>
+            - isLegacy: {isLegacy ? 'true' : 'false'}<br/>
+            - latestSession.status: {latestSession?.status}<br/>
+            - currentCase.adaptiveDecisions.length: {currentCase.adaptiveDecisions?.length || 0}<br/>
+            - activeDecisions (filtered): {adaptiveDecisions.length}<br/>
+            - latestSession.id: {latestSession?.id}<br/>
+            - currentCase MCQs count: {currentCase.mcqs?.length || 0}<br/>
+            - latestSession attempts count: {latestSession?.attempts?.length || 0}<br/>
+            <details>
+              <summary>View Engine Trace Log (Click to expand)</summary>
+              <pre className="mt-2 text-[10px] bg-white p-2 rounded whitespace-pre-wrap font-mono">
+                {currentCase.adaptiveDebugLog || "No trace available"}
+              </pre>
+            </details>
+            <details>
+              <summary>View Latest 3 Attempts (Click to expand)</summary>
+              <pre className="mt-2 text-[10px] bg-white p-2 rounded whitespace-pre-wrap">
+                {JSON.stringify(latestSession?.attempts?.slice(-3) || [], null, 2)}
+              </pre>
+            </details>
+            <details>
+              <summary>View MCQs (Click to expand)</summary>
+              <pre className="mt-2 text-[10px] bg-white p-2 rounded whitespace-pre-wrap">
+                {JSON.stringify(currentCase.mcqs?.map(q => ({ id: q.id, concept: q.primaryConceptId, diff: q.difficulty })) || [], null, 2)}
+              </pre>
+            </details>
+          </div>
+
           {currentCase.adaptiveDifficultyEnabled && adaptiveDecisions.length > 0 && (
             <div className="mb-6">
               <h3 className="mb-3 text-[var(--text-primary)]">Adaptive Recommendations</h3>
@@ -398,6 +360,12 @@ function IndividualResultsPageContent() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {!isLegacy && analysisResult && (
+        <div className="mb-12">
+          <h2 className="mb-6">Performance Breakdown</h2>
 
           <div className="glass-card mb-6">
             <h3 className="mb-2">Summary</h3>
@@ -405,7 +373,7 @@ function IndividualResultsPageContent() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="glass-card">
+            <div className="glass-card" style={{ backgroundColor: 'rgba(254, 226, 226, 0.4)', borderColor: 'rgba(252, 165, 165, 0.5)' }}>
               <h3 className="mb-4 text-[var(--error)] flex items-center gap-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 Concepts Needing Attention
@@ -426,7 +394,7 @@ function IndividualResultsPageContent() {
               )}
             </div>
 
-            <div className="glass-card">
+            <div className="glass-card" style={{ backgroundColor: 'rgba(220, 252, 231, 0.4)', borderColor: 'rgba(134, 239, 172, 0.5)' }}>
               <h3 className="mb-4 text-[var(--success)] flex items-center gap-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 Strong Concepts
@@ -454,7 +422,7 @@ function IndividualResultsPageContent() {
         </div>
       )}
 
-      <div className="mb-12">
+      <div style={{ marginTop: '30px', marginBottom: '48px' }}>
         <h2 className="mb-6">Question-by-Question Review</h2>
         <div className="space-y-6">
           {questions.map((q: any, idx: number) => {

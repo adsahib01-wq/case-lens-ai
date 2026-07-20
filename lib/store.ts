@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { buildQuestionReviewAnalysis } from "./reviewBuilder";
+import { 
+  buildAdaptiveEvidence, 
+  decideNextDifficulty, 
+  createAdaptiveDecisionKey, 
+  ADAPTIVE_RULE_VERSION,
+  resolveCurrentDifficulty
+} from "./adaptive/engine";
 
 export function generateId(): string {
   try {
@@ -168,16 +175,28 @@ export type AdaptiveDecision = {
   id: string;
   decisionKey: string;
   conceptId: string;
+  sourceSessionId: string;
   previousDifficulty: DifficultyLevel;
-  nextDifficulty: DifficultyLevel;
+  recommendedDifficulty: DifficultyLevel;
   decision: AdaptiveDecisionType;
   purpose: AdaptiveQuestionPurpose;
   reasonCode: AdaptiveReasonCode;
   evidenceAttemptIds: string[];
-  evidenceCount: number;
-  ruleVersion: 1;
+  ruleVersion: number;
   createdAt: string;
 };
+
+export interface AdaptiveEvidence {
+  attemptId: string;
+  questionId: string;
+  conceptId: string;
+  difficulty: DifficultyLevel;
+  isCorrect: boolean;
+  confidence?: "Low" | "Moderate" | "High";
+  hintsUsed?: number;
+  submissionReason?: string;
+  submittedAt: string;
+}
 
 export type PracticeSessionPurpose =
   | "standard"
@@ -459,9 +478,10 @@ export type CaseStudy = {
   
   // Practice Mode Settings (Defaults for next session)
   practiceMode?: PracticeMode;
-  timerConfig?: PracticeTimerConfig;
+  analysisRevealStatus?: "hidden" | "revealed";
   adaptiveDifficultyEnabled?: boolean;
   adaptiveDecisions?: AdaptiveDecision[];
+  adaptiveDebugLog?: string; // DEBUG TRACE
 
   studyMaterials?: StudyMaterial[];
 
@@ -887,6 +907,7 @@ export const useCaseStore = create<CaseStore>()(
                   }
                   return s;
                 }),
+                attempts: [...(c.attempts || []).filter((a) => a.questionId !== attempt.questionId), attempt],
               };
             }
             return c;
@@ -926,21 +947,133 @@ export const useCaseStore = create<CaseStore>()(
         set((state) => ({
           cases: state.cases.map((c) => {
             if (c.id === caseId && c.practiceSessions) {
-              return {
+              const updatedCase = {
                 ...c,
                 practiceSessions: c.practiceSessions.map((s) => {
                   if (s.id === sessionId && s.status !== "completed" && s.status !== "expired") {
-                    const status = reason === "total-time-expired" ? "expired" : "completed";
-                    return {
+                    const status = (reason === "total-time-expired" ? "expired" : "completed") as "expired" | "completed";
+                    const completedSession = {
                       ...s,
                       status,
                       completionReason: reason,
                       completedAt: new Date().toISOString(),
                     };
+                    return completedSession;
                   }
                   return s;
                 }),
               };
+
+              // Adaptive Difficulty Evaluation (exactly once at completion)
+              if (updatedCase.adaptiveDifficultyEnabled) {
+                const mcqs = updatedCase.mcqs || updatedCase.questions || [];
+                const session = updatedCase.practiceSessions.find(s => s.id === sessionId);
+                if (session && (session.status === "completed" || session.status === "expired")) {
+                  const testedConceptIds = new Set<string>();
+                  session.attempts.forEach(a => {
+                    const rawQ = mcqs.find(mq => mq.id === a.questionId);
+                    if (rawQ) {
+                      const q = rawQ as McqQuestion;
+                      if (q.primaryConceptId) {
+                        testedConceptIds.add(q.primaryConceptId);
+                      } else if (q.conceptTags?.[0]?.conceptId) {
+                        testedConceptIds.add(q.conceptTags[0].conceptId);
+                      }
+                    }
+                  });
+
+                  const newDecisions = updatedCase.adaptiveDecisions ? [...updatedCase.adaptiveDecisions] : [];
+
+                  let debugLog = "";
+                  
+                  // Guarantee current session attempts are included even if global attempts array is lagging
+                  const allAttemptsMap = new Map();
+                  (updatedCase.attempts || []).forEach(a => { if (a.id) allAttemptsMap.set(a.id, a); });
+                  session.attempts.forEach(a => { if (a.id) allAttemptsMap.set(a.id, a); });
+                  const combinedAttempts = Array.from(allAttemptsMap.values());
+
+                  testedConceptIds.forEach(conceptId => {
+                    debugLog += `\nEval concept: ${conceptId}`;
+                    const evidence = buildAdaptiveEvidence({
+                      conceptId,
+                      attempts: combinedAttempts,
+                      questions: mcqs as McqQuestion[]
+                    });
+                    debugLog += `\nEvidence len: ${evidence.length}`;
+
+                    if (evidence.length >= 1) {
+                      const currentDiff = resolveCurrentDifficulty({
+                        conceptId,
+                        completedSessions: updatedCase.practiceSessions || [],
+                        savedDecisions: updatedCase.adaptiveDecisions || [],
+                        evidence,
+                        caseStartingDifficulty: updatedCase.difficulty as DifficultyLevel
+                      });
+                      debugLog += `\nDiff resolved: ${currentDiff}`;
+
+                      if (currentDiff) {
+                        const result = decideNextDifficulty({
+                          conceptId,
+                          currentDifficulty: currentDiff,
+                          evidence
+                        });
+                        debugLog += `\nResult reason: ${result.reasonCode}`;
+
+                        if (result.reasonCode !== "insufficient-evidence") {
+                          const attemptIds = evidence.map(e => e.attemptId);
+                          const decisionKey = createAdaptiveDecisionKey({
+                            conceptId,
+                            currentDifficulty: currentDiff,
+                            orderedAttemptIds: attemptIds,
+                            ruleVersion: ADAPTIVE_RULE_VERSION
+                          });
+                          debugLog += `\nKey: ${decisionKey}`;
+
+                          // Only save if this exact decision key doesn't already exist
+                          if (!newDecisions.some(d => d.decisionKey === decisionKey)) {
+                            // Ensure at least one attempt is NEW compared to the last applied decision
+                            const lastApplied = [...newDecisions]
+                              .filter(d => d.conceptId === conceptId)
+                              .filter(d => updatedCase.practiceSessions?.some(s => s.adaptiveContext?.sourceDecisionId === d.id))
+                              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+                            
+                            let hasNewAttempt = true;
+                            if (lastApplied) {
+                              hasNewAttempt = attemptIds.some(id => !lastApplied.evidenceAttemptIds.includes(id));
+                            }
+                            debugLog += `\nHasNewAttempt: ${hasNewAttempt}`;
+
+                            if (hasNewAttempt) {
+                              newDecisions.push({
+                                id: generateId(),
+                                decisionKey,
+                                conceptId,
+                                sourceSessionId: sessionId,
+                                previousDifficulty: result.previousDifficulty,
+                                recommendedDifficulty: result.recommendedDifficulty,
+                                decision: result.decision,
+                                purpose: result.purpose,
+                                reasonCode: result.reasonCode,
+                                evidenceAttemptIds: attemptIds,
+                                ruleVersion: ADAPTIVE_RULE_VERSION,
+                                createdAt: new Date().toISOString()
+                              });
+                              debugLog += `\nPushed new decision!`;
+                            }
+                          } else {
+                            debugLog += `\nKey exists in newDecisions`;
+                          }
+                        }
+                      }
+                    }
+                  });
+
+                  updatedCase.adaptiveDecisions = newDecisions;
+                  updatedCase.adaptiveDebugLog = debugLog;
+                }
+              }
+
+              return updatedCase;
             }
             return c;
           }),
