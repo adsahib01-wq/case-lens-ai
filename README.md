@@ -333,11 +333,13 @@ CaseLens AI was developed as an AI-enabled educational application for the ACT A
 
 Shahzaib
 
-## Key Engineering Decisions
+## Architecture and Documentation
 
-Detailed bug reproduction steps, stack traces, affected files, and implementation notes belong in `docs/engineering-notes.md`.
+For detailed architectural guidelines, API specifications, and historical engineering decisions, refer to the following documents:
 
-- Stable question identifiers were added for legacy records.
-- Results navigation now uses explicit session identifiers.
-- Strict TypeScript validation exposed hidden union-type and import defects.
-- A normalized IndexedDB architecture has been designed for future scale.
+- **[Engineering Notes](docs/engineering-notes.md)**: A living technical record tracking engineering decisions, defects, compatibility rules, and resolution findings.
+- **[Data Architecture](docs/architecture/data-architecture.md)**: The definitive blueprint for data ownership, schema definitions, and the planned IndexedDB migration strategy.
+- **[API Specifications](docs/api.md)**: Strict endpoint specifications outlining prompt strategies, AI schema validation, and Next.js boundary protections.
+- **[Medical Knowledge Architecture](docs/architecture/medical-knowledge.md)**: Future workflow design for Canonical Medical Resource Ingestion and Source-Grounded Retrieval-Augmented Generation (RAG).
+- **[Privacy and Security](docs/privacy-and-security.md)**: Defines the platform's security boundaries, PII-avoidance rules, and local-first data protection strategies.
+- **[Changelog](CHANGELOG.md)**: Project release history and notable changes.
