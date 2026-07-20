@@ -54,14 +54,17 @@ if (!apiKey) {
   console.warn("WARNING: GROQ_API_KEY is not set in the environment variables.");
 }
 
-const ai = new OpenAI({ 
-  apiKey: process.env.GROQ_API_KEY || "",
-  baseURL: "https://api.groq.com/openai/v1"
-});
+function getAiClient() {
+  return new OpenAI({ 
+    apiKey: process.env.GROQ_API_KEY || "",
+    baseURL: "https://api.groq.com/openai/v1"
+  });
+}
 
 // Since some OpenAI-compatible models (like Grok) don't fully support structured outputs via json_schema,
 // we will instruct the model to return a JSON object, and rely on standard JSON response formatting.
 async function safeChatCompletion(prompt: string, model: string = "llama-3.3-70b-versatile", temperature: number = 0.2) {
+  const ai = getAiClient();
   const response = await ai.chat.completions.create({
     model,
     messages: [{ role: "user", content: prompt }],

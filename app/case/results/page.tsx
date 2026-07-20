@@ -7,7 +7,7 @@ import Link from "next/link";
 import { getApiUrl } from "@/lib/api-client";
 import PieChart from "@/components/PieChart";
 import { calculateConfidenceSummary, getConfidenceCalibration, getConfidenceInsight } from "@/lib/confidenceUtils";
-import { getPracticeSessions, AdaptiveDecision, QuestionAttempt, getLatestSession } from "@/lib/store";
+import { getPracticeSessions, AdaptiveDecision, QuestionAttempt, getLatestSession, QuestionReviewAnalysis } from "@/lib/store";
 import { decideNextDifficulty, extractEligibleAdaptiveEvidence, createAdaptiveDecisionKey } from "@/lib/adaptive";
 import { AdaptiveRecommendationCard } from "@/components/AdaptiveRecommendationCard";
 import { QuestionReviewCard } from "@/components/QuestionReviewCard";
