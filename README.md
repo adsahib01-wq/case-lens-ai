@@ -1,5 +1,7 @@
 # CaseLens AI
 
+🚀 **[Live Deployment: CaseLens AI on Vercel](https://case-lens-ai.vercel.app/)**
+
 **AI-assisted clinical case reasoning and MCQ learning platform**
 
 CaseLens AI is an educational medical learning application that helps learners analyse clinical cases, build differential diagnoses, practise case-based MCQs, review reasoning errors, and identify concepts that require further study.
