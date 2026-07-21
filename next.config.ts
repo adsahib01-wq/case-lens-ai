@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  // Note: API routes are not supported with 'export', 
-  // but we are proxying them to Vercel via api-client.
+  // output: 'export', // Removed for Vercel deployment so API routes are supported
 };
 
 export default nextConfig;

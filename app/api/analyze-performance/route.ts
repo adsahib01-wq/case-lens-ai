@@ -1,4 +1,5 @@
 export const maxDuration = 60;
+
 import { NextResponse } from "next/server";
 import { analyzePerformance } from "@/lib/ai";
 

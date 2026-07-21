@@ -1,4 +1,5 @@
 export const maxDuration = 60;
+
 import { NextResponse } from "next/server";
 import { compareDifferential, compareDifferentialRequestSchema } from "@/lib/ai";
 

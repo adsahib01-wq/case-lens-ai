@@ -3,6 +3,7 @@ import styles from "./ProgressiveCaseReveal.module.css";
 import { ProgressiveStageDraft, ProgressiveStageResponse } from "@/lib/store";
 import { ConfidenceSelector } from "./ConfidenceSelector";
 import { ConfidenceLevel } from "@/lib/confidenceUtils";
+import confidenceStyles from "./ConfidenceSelector.module.css";
 
 interface ProgressiveReasoningFormProps {
   stageId: string;
@@ -160,62 +161,83 @@ export function ProgressiveReasoningForm({
         {errors.mostImportantClue && <span className={styles.errorText}>{errors.mostImportantClue}</span>}
       </div>
 
-      <fieldset className={styles.fieldset} id="field-differentialChanged">
-        <legend className={styles.label}>Has your differential changed?</legend>
-        <div className={styles.radioGroup}>
-          {(isFirstStage ? ["initial"] : ["yes", "no", "uncertain"]).map((value) => (
-            <label key={value} className={styles.radioLabel}>
-              <input
-                type="radio"
-                name={`differential-change-${stageId}`}
-                value={value}
-                checked={differentialChanged === value}
-                onChange={() => {
-                  setDifferentialChanged(value as any);
-                  if (errors.differentialChanged) setErrors(prev => ({ ...prev, differentialChanged: "" }));
+      {!isFirstStage && (
+        <>
+          <fieldset className={confidenceStyles.confidenceSelector} id="field-differentialChanged">
+            <div className={confidenceStyles.confidenceHeader}>
+              <legend>Has your differential changed?</legend>
+            </div>
+            <div className={confidenceStyles.confidenceOptions}>
+              {["yes", "no", "uncertain"].map((value) => {
+                const isSelected = differentialChanged === value;
+                
+                let description = "";
+                if (value === "yes") description = "My leading diagnosis or alternatives have shifted.";
+                else if (value === "no") description = "My differential remains the same as before.";
+                else if (value === "uncertain") description = "I need more information to decide.";
+
+                return (
+                  <label key={value} className={[
+                    confidenceStyles.confidenceOption,
+                    isSelected ? confidenceStyles.confidenceOptionSelected : ""
+                  ].filter(Boolean).join(" ")}>
+                    <input
+                      type="radio"
+                      name={`differential-change-${stageId}`}
+                      value={value}
+                      checked={isSelected}
+                      onChange={() => {
+                        setDifferentialChanged(value as any);
+                        if (errors.differentialChanged) setErrors(prev => ({ ...prev, differentialChanged: "" }));
+                      }}
+                      className={confidenceStyles.radioInput}
+                    />
+                    <span className={confidenceStyles.confidenceOptionContent}>
+                      <strong>{value.charAt(0).toUpperCase() + value.slice(1)}</strong>
+                      <span>{description}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {errors.differentialChanged && <p className={confidenceStyles.confidenceError}>{errors.differentialChanged}</p>}
+          </fieldset>
+
+          {(differentialChanged === "yes" || differentialChanged === "uncertain") && (
+            <div className={styles.formGroup}>
+              <label htmlFor="field-changeExplanation" className={styles.label}>
+                {differentialChanged === "yes" ? "Explain how your reasoning changed" : "What uncertainty remains?"}
+              </label>
+              <textarea
+                id="field-changeExplanation"
+                className={`${styles.textarea} ${errors.changeExplanation ? styles.inputError : ''}`}
+                value={changeExplanation}
+                onChange={(e) => {
+                  setChangeExplanation(e.target.value);
+                  if (errors.changeExplanation) setErrors(prev => ({ ...prev, changeExplanation: "" }));
                 }}
               />
-              <span className={styles.radioText}>{value === "initial" ? "Initial impression" : value.charAt(0).toUpperCase() + value.slice(1)}</span>
-            </label>
-          ))}
-        </div>
-        {errors.differentialChanged && <span className={styles.errorText}>{errors.differentialChanged}</span>}
-      </fieldset>
+              {errors.changeExplanation && <span className={styles.errorText}>{errors.changeExplanation}</span>}
+            </div>
+          )}
 
-      {(differentialChanged === "yes" || differentialChanged === "uncertain") && (
-        <div className={styles.formGroup}>
-          <label htmlFor="field-changeExplanation" className={styles.label}>
-            {differentialChanged === "yes" ? "Explain how your reasoning changed" : "What uncertainty remains?"}
-          </label>
-          <textarea
-            id="field-changeExplanation"
-            className={`${styles.textarea} ${errors.changeExplanation ? styles.inputError : ''}`}
-            value={changeExplanation}
-            onChange={(e) => {
-              setChangeExplanation(e.target.value);
-              if (errors.changeExplanation) setErrors(prev => ({ ...prev, changeExplanation: "" }));
-            }}
-          />
-          {errors.changeExplanation && <span className={styles.errorText}>{errors.changeExplanation}</span>}
-        </div>
-      )}
-
-      {differentialChanged === "no" && (
-        <div className={styles.formGroup}>
-          <label htmlFor="field-changeExplanation" className={styles.label}>
-            Why did the new information not change your leading interpretation? <span className={styles.optionalLabel}>(Optional)</span>
-          </label>
-          <textarea
-            id="field-changeExplanation"
-            className={styles.textarea}
-            value={changeExplanation}
-            onChange={(e) => setChangeExplanation(e.target.value)}
-          />
-        </div>
+          {differentialChanged === "no" && (
+            <div className={styles.formGroup}>
+              <label htmlFor="field-changeExplanation" className={styles.label}>
+                Why did the new information not change your leading interpretation? <span className={styles.optionalLabel}>(Optional)</span>
+              </label>
+              <textarea
+                id="field-changeExplanation"
+                className={styles.textarea}
+                value={changeExplanation}
+                onChange={(e) => setChangeExplanation(e.target.value)}
+              />
+            </div>
+          )}
+        </>
       )}
 
       <div className={styles.formGroup} id="field-confidence">
-        <label className={styles.label}>How confident are you in your current reasoning?</label>
         <ConfidenceSelector
           value={confidence || null}
           onChange={(val: ConfidenceLevel) => {

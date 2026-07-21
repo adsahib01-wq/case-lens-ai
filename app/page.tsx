@@ -9,9 +9,7 @@ export default function HomePage() {
 
         <div className={styles.heroContent}>
           <div className={styles.heroBrand}>
-            <span className={styles.heroLogoMark} aria-hidden="true">
-              C
-            </span>
+            <img src="/logo.svg" alt="" width="42" height="42" className={styles.heroLogoMark} aria-hidden="true" />
 
             <span>CaseLens AI</span>
           </div>
@@ -35,7 +33,7 @@ export default function HomePage() {
               </span>
             </Link>
 
-            <Link href="/about" className={styles.secondaryButton}>
+            <Link href="/how-it-works" className={styles.secondaryButton}>
               Explore How It Works
             </Link>
           </div>

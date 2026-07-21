@@ -132,10 +132,35 @@ export default function NewCasePage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      
+      let progressiveCase = data.progressiveCase || null;
+      let progressiveGenerationStatus = data.progressiveGenerationStatus || "not-requested";
+
+      if (caseFormat === "progressive" && data.isValid) {
+        try {
+          const progRes = await fetch(getApiUrl("/api/generate-progressive-case"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: caseContent.trim() }),
+          });
+          const progData = await progRes.json();
+          if (progRes.ok && progData.progressiveGenerationStatus === "ready") {
+            progressiveCase = progData.progressiveCase;
+            progressiveGenerationStatus = "ready";
+          } else {
+            progressiveGenerationStatus = "failed";
+          }
+        } catch (error) {
+          console.error("Failed to generate progressive case separately:", error);
+          progressiveGenerationStatus = "failed";
+        }
+      } else if (caseFormat === "progressive") {
+        progressiveGenerationStatus = "failed";
+      }
 
       // 2. Save the local case record using Zustand
       const caseId = crypto.randomUUID();
-      const actualFormat = data.progressiveGenerationStatus === "failed" ? "complete" : caseFormat;
+      const actualFormat = progressiveGenerationStatus === "failed" ? "complete" : caseFormat;
       
       const caseRecord = {
         id: caseId,
@@ -149,8 +174,8 @@ export default function NewCasePage() {
         differentialBuilderEnabled,
         analysisRevealStatus: differentialBuilderEnabled ? "hidden" : "revealed",
         caseFormat: actualFormat,
-        progressiveGenerationStatus: data.progressiveGenerationStatus || "not-requested",
-        progressiveCase: data.progressiveCase,
+        progressiveGenerationStatus,
+        progressiveCase,
         practiceMode,
         timerConfig: practiceMode === "exam" ? {
           mode: timerMode,
@@ -162,7 +187,7 @@ export default function NewCasePage() {
 
       useCaseStore.getState().addCase(caseRecord);
 
-      if (data.progressiveGenerationStatus === "failed" && caseFormat === "progressive") {
+      if (progressiveGenerationStatus === "failed" && caseFormat === "progressive") {
         alert("Progressive presentation is unavailable. The educational analysis was generated successfully, but the case could not be organised into a reliable staged format. Continuing with Complete Case.");
       }
 
@@ -170,7 +195,7 @@ export default function NewCasePage() {
       router.push(`/case?id=${caseId}`);
     } catch (error) {
       console.error("Unable to create case:", error);
-      alert("Failed to analyze case. Please try again.");
+      alert(`Failed to analyze case. Error: ${error instanceof Error ? error.message : String(error)}`);
       setIsSubmitting(false);
     }
   }

@@ -46,10 +46,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
     <ConfirmProvider>
       <nav className="navbar">
         <Link href="/" className="navbar-brand">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="24" height="24" rx="6" fill="#6B4EFF"/>
-            <path d="M12 6L18 10V14L12 18L6 14V10L12 6Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
-          </svg>
+          <img src="/logo.svg" alt="CaseLens AI" width="28" height="28" style={{ borderRadius: '6px' }} />
           CaseLens AI
         </Link>
         <div className="navbar-links hidden md:flex">
@@ -57,7 +54,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
           <Link href="/new-case" className={pathname.startsWith("/new-case") ? "active" : ""}>New Case</Link>
           <Link href="/history" className={pathname.startsWith("/history") ? "active" : ""}>Case History</Link>
           <Link href="/results" className={pathname.startsWith("/results") ? "active" : ""}>Overall Results</Link>
-          <Link href="/about" className={pathname.startsWith("/about") ? "active" : ""}>About & Safety</Link>
+          <Link href="/about" className={pathname.startsWith("/about") ? "active" : ""}>About CaseLens AI</Link>
         </div>
         <button 
           className="md:hidden btn btn-secondary" 
@@ -70,7 +67,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       {/* SM-01 Mobile Navigation Drawer */}
       {menuOpen && (
         <div className="fixed inset-0 z-50 flex justify-end" style={{ backgroundColor: 'rgba(32,33,36,0.6)' }}>
-          <div className="w-64 h-full p-6 flex flex-col gap-4 border-l shadow-2xl" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--card-border)' }}>
+          <div className="w-64 h-full p-6 flex flex-col gap-4 border-l shadow-2xl overflow-y-auto" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--card-border)' }}>
             <button className="btn btn-secondary self-end mb-4 text-sm px-4 py-2" onClick={() => setMenuOpen(false)}>
               Close &times;
             </button>
@@ -78,7 +75,8 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
             <Link href="/new-case" className="btn btn-primary w-full text-center justify-center">Start New Case</Link>
             <Link href="/history" className="btn btn-secondary w-full text-center justify-center">Case History</Link>
             <Link href="/results" className="btn btn-secondary w-full text-center justify-center">Overall Results</Link>
-            <Link href="/about" className="btn btn-secondary w-full text-center justify-center">About & Safety</Link>
+            <Link href="/about" className="btn btn-secondary w-full text-center justify-center">About CaseLens AI</Link>
+            <Link href="/safety" className="btn btn-secondary w-full text-center justify-center">Safety Guidelines</Link>
             <Link href="/privacy" className="btn btn-secondary w-full text-center justify-center">Privacy Policy</Link>
           </div>
         </div>
@@ -101,11 +99,14 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       <main>{children}</main>
 
       <footer className="p-6 text-center text-sm text-gray-400 mt-12" style={{ borderTop: '1px solid var(--card-border)' }}>
-        <div className="flex justify-center gap-4 mb-2">
-          <Link href="/about" className="hover:text-primary">About & Safety</Link>
-          <Link href="/privacy" className="hover:text-primary">Privacy</Link>
+        <div className="flex flex-wrap justify-center gap-4 mb-2">
+          <Link href="/about" className="hover:text-primary">About CaseLens AI</Link>
+          <Link href="/safety" className="hover:text-primary">Safety Guidelines</Link>
+          <Link href="/privacy" className="hover:text-primary">Privacy Policy</Link>
         </div>
-        &copy; {new Date().getFullYear()} CaseLens AI. Educational use only.
+        <div style={{ marginTop: '12px' }}>
+          &copy; {new Date().getFullYear()} CaseLens AI. Developed by Shahzaib. Educational use only.
+        </div>
       </footer>
     </ConfirmProvider>
   );

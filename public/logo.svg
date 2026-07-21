@@ -1,0 +1,27 @@
+<svg viewBox="0 0 512 512" width="512" height="512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#9333EA"/>
+    </linearGradient>
+    <linearGradient id="glass-grad" x1="150" y1="150" x2="350" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.05)"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Base background rounded -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg-grad)" />
+  
+  <!-- Magnifying glass handle -->
+  <path d="M340 340 L440 440" stroke="#ffffff" stroke-width="54" stroke-linecap="round"/>
+  
+  <!-- Magnifying glass frame -->
+  <circle cx="236" cy="236" r="130" stroke="#ffffff" stroke-width="36" fill="url(#glass-grad)"/>
+  
+  <!-- Inner Medical Cross -->
+  <path d="M236 166 V306 M166 236 H306" stroke="#ffffff" stroke-width="32" stroke-linecap="round"/>
+  
+  <!-- Highlight / Reflection on glass -->
+  <path d="M145 190 A 90 90 0 0 1 200 140" stroke="rgba(255,255,255,0.8)" stroke-width="16" stroke-linecap="round"/>
+</svg>

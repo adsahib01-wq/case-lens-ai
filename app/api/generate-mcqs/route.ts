@@ -1,4 +1,5 @@
 export const maxDuration = 60;
+
 import { NextResponse } from "next/server";
 import { generateMCQs } from "@/lib/ai";
 import { z } from "zod";

@@ -10,6 +10,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Advanced Learning Features:** Progressive Case Reveal, Pre-Answer Confidence Ratings, and Differential Diagnosis Builder.
 - **Phase-3 Cloud Sync:** Implement a local-first synchronization architecture for cross-device support.
 
+## [1.3.0] - 2026-07-21
+### Added
+- **Progressive Case Reveal:** Implemented staged case progression with AI splitting cases into sequential clinical stages, allowing learners to analyze information incrementally without leaking the final diagnosis.
+- **Differential Builder:** Introduced an interactive framework to track shifts in diagnostic reasoning, leading diagnoses, and confidence levels across progressive stages, culminating in a final comparison with an AI-generated differential standard.
+- **Comprehensive Privacy & Safety Redesign:** Fully separated and overhauled the documentation into three distinct, detailed pages (`/about`, `/safety`, `/privacy`) utilizing strict bureaucratic structure and removing ambiguous legal disclaimers.
+- **New Identity & Favicon:** Designed a modern, scalable SVG logo combining a medical cross and magnifying glass over an indigo gradient, seamlessly integrated as the Next.js `app/icon.svg` and navbar graphic.
+
+### Fixed
+- **Vercel Serverless Timeout Mitigation:** Resolved 60-second hard timeouts on Vercel's Hobby tier by decoupling the monolithic `generate-case` workflow. Initial analysis and progressive stage generation are now executed sequentially via independent API routes, keeping both well under the limit.
+
 ---
 
 ## [1.2.0] - 2026-07-21

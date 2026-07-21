@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import styles from "./ConfirmProvider.module.css";
 
 interface ConfirmOptions {
   title?: string;
@@ -43,21 +44,21 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
       {isOpen && options && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ backgroundColor: 'rgba(32,33,36,0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="rounded-2xl p-6 w-full mx-4 shadow-xl border border-[var(--card-border)]" style={{ maxWidth: '400px', backgroundColor: 'var(--bg-primary, white)' }}>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">
+        <div className={styles.overlay}>
+          <div className={styles.modal}>
+            <h3 className={styles.title}>
               {options.title || "Confirm"}
             </h3>
-            <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">
+            <p className={styles.message}>
               {options.message}
             </p>
-            <div className="flex justify-end gap-3">
-              <button onClick={handleCancel} className="btn btn-secondary text-sm">
+            <div className={styles.actions}>
+              <button onClick={handleCancel} className={`${styles.button} ${styles.buttonCancel}`}>
                 {options.cancelText || "Cancel"}
               </button>
               <button 
                 onClick={handleConfirm} 
-                className={`btn text-sm ${options.danger ? "text-red-500 border border-red-500/30 hover:bg-red-50" : "btn-primary"}`}
+                className={`${styles.button} ${options.danger ? styles.buttonDanger : styles.buttonConfirm}`}
               >
                 {options.confirmText || "Confirm"}
               </button>

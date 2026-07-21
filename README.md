@@ -258,8 +258,9 @@ public/
 | `/case/results` | Individual case results |
 | `/history` | Saved case history |
 | `/results` | Overall results across all cases |
-| `/about` | About and safety |
-| `/privacy` | Privacy information |
+| `/about` | About CaseLens AI |
+| `/privacy` | Privacy Policy |
+| `/safety` | Safety Guidelines |
 | `/report/analysis` | Printable analysis report |
 | `/report/full` | Printable full report |
 | `/report/mcqs` | Printable MCQ review report |
