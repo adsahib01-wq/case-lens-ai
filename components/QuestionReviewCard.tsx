@@ -255,7 +255,7 @@ export function QuestionReviewCard({ question, analysis, hideQuestionContext = f
                       <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold mr-2">Priority</span>
                       <span className={`capitalize font-bold px-2 py-1 rounded text-xs ${
                         analysis.conceptImpact.reviewPriority === 'high' ? 'bg-red-100 text-red-700' :
-                        analysis.conceptImpact.reviewPriority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                        analysis.conceptImpact.reviewPriority === 'normal' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                       }`}>{analysis.conceptImpact.reviewPriority}</span>
                     </div>
                   </div>
