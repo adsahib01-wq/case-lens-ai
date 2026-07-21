@@ -88,8 +88,21 @@ async function safeChatCompletion(prompt: string, model: string = "llama-3.3-70b
         response_format: { type: "json_object" },
       });
       
-      const text = response.choices[0].message.content;
+      let text = response.choices[0].message.content;
       if (!text) throw new Error("No response text from AI.");
+      
+      // Strip markdown code blocks if the model wrapped the JSON (common with LLaMA)
+      text = text.trim();
+      if (text.startsWith("```json")) {
+        text = text.replace(/^```json/, "");
+      } else if (text.startsWith("```")) {
+        text = text.replace(/^```/, "");
+      }
+      if (text.endsWith("```")) {
+        text = text.replace(/```$/, "");
+      }
+      text = text.trim();
+
       return JSON.parse(text);
     } catch (error) {
       if (attempt === maxRetries) throw error;
