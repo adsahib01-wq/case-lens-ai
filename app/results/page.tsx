@@ -17,7 +17,7 @@ export default function OverallResults() {
   const cases = useCaseStore((state) => state.cases);
   const globalAnalysis = useCaseStore((state) => state.globalAnalysis);
   const setGlobalAnalysis = useCaseStore((state) => state.setGlobalAnalysis);
-  const startAdaptiveSession = useCaseStore((state) => state.startAdaptiveSession);
+  const createPracticeSession = useCaseStore((state) => state.createPracticeSession);
 
   const [mounted, setMounted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -94,8 +94,15 @@ export default function OverallResults() {
     try {
       const cse = cases.find(c => c.adaptiveDecisions?.some(d => d.id === decisionId));
       if (!cse) throw new Error("Could not find the case associated with this adaptive review.");
-      startAdaptiveSession(cse.id, decisionId);
-      router.push(`/case/practice`);
+      const decision = cse.adaptiveDecisions?.find(d => d.id === decisionId);
+      if (!decision) throw new Error("Could not find the adaptive decision record.");
+      const sessionId = createPracticeSession(cse.id, "learning", { mode: "none" }, "adaptive-review", { 
+        conceptId: decision.conceptId,
+        targetDifficulty: decision.recommendedDifficulty,
+        questionPurpose: decision.purpose,
+        sourceDecisionId: decisionId 
+      });
+      router.push(`/case/practice?id=${cse.id}&sessionId=${sessionId}`);
     } catch (e: any) {
       alert(e.message);
       setIsStartingAdaptive(false);

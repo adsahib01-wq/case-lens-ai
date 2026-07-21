@@ -478,6 +478,7 @@ export type CaseStudy = {
   
   // Practice Mode Settings (Defaults for next session)
   practiceMode?: PracticeMode;
+  timerConfig?: PracticeTimerConfig;
   analysisRevealStatus?: "hidden" | "revealed";
   adaptiveDifficultyEnabled?: boolean;
   adaptiveDecisions?: AdaptiveDecision[];
@@ -491,7 +492,6 @@ export type CaseStudy = {
 
   // Differential Builder Fields
   differentialBuilderEnabled?: boolean;
-  analysisRevealStatus?: "hidden" | "revealed";
   differentialDraft?: LearnerDifferentialDraft;
   differentialSubmission?: LearnerDifferentialSubmission;
 

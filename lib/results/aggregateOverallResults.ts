@@ -1,4 +1,4 @@
-import { CaseStudy, QuestionAttempt, McqQuestion } from "../types";
+import { CaseStudy, QuestionAttempt, McqQuestion, PracticeSession } from "../store";
 import { CombinedConceptPerformance, OverallResultsAggregate } from "./types";
 import { classifyConceptPerformance } from "./classifyConceptPerformance";
 
@@ -39,7 +39,7 @@ export function aggregateOverallResults(input: { cases: CaseStudy[] }): Aggregat
     let caseCounted = false;
 
     if (c.practiceSessions) {
-      c.practiceSessions.forEach(session => {
+      c.practiceSessions.forEach((session: PracticeSession) => {
         if (session.status !== "completed" && session.status !== "expired") return;
         
         if (!caseCounted) {
@@ -48,48 +48,42 @@ export function aggregateOverallResults(input: { cases: CaseStudy[] }): Aggregat
         }
         completedTests++;
 
-        const mcqs = c.mcqs || c.questions || [];
+        const mcqs = (c.mcqs || c.questions || []) as any[];
         totalQuestions += mcqs.length;
 
         // Deduplicate attempts within this session
         const sessionAttempts = new Map<string, QuestionAttempt>();
         if (session.attempts) {
-          session.attempts.forEach(a => {
+          session.attempts.forEach((a: QuestionAttempt) => {
             // Priority: Valid attempt ID -> latest accepted persisted attempt
             sessionAttempts.set(a.questionId, a);
           });
         }
 
-        mcqs.forEach(q => {
+        mcqs.forEach((q: any) => {
           const canonicalConceptId = q.primaryConceptId || q.conceptTags?.[0]?.conceptId || "unclassified";
           const conceptLabel = q.conceptTags?.[0]?.conceptName || canonicalConceptId;
+
+          const attempt = sessionAttempts.get(q.id);
 
           if (!conceptAttemptHistory[canonicalConceptId]) {
             conceptAttemptHistory[canonicalConceptId] = [];
           }
 
-          const attempt = sessionAttempts.get(q.id);
-          if (attempt) {
-            // Answered question
+          if (!attempt) {
+            unanswered++;
+            conceptAttemptHistory[canonicalConceptId].push({ attempt: {} as any, conceptName: conceptLabel, isUnanswered: true, qId: q.id, sessionId: session.id });
+          } else {
             validAttemptsMap.set(`${session.id}:${q.id}`, attempt);
-            
-            conceptAttemptHistory[canonicalConceptId].push({
-              attempt,
-              conceptName: conceptLabel,
-              isUnanswered: false,
-              qId: q.id,
-              sessionId: session.id
-            });
+            conceptAttemptHistory[canonicalConceptId].push({ attempt, conceptName: conceptLabel, isUnanswered: false, qId: q.id, sessionId: session.id });
 
             answeredQuestions++;
-            if (attempt.isCorrect) {
-              correct++;
-            } else {
-              incorrect++;
-            }
+            if (attempt.isCorrect) correct++;
+            else incorrect++;
 
-            // Confidence tracking
-            if (attempt.confidence && attempt.confidence !== "Not-recorded") {
+            if (!attempt.confidence) {
+              confidenceNotRecorded++;
+            } else {
               confidenceRecordedCount++;
               if (attempt.isCorrect) {
                 if (attempt.confidence === "High") highConfidenceCorrect++;
@@ -100,20 +94,7 @@ export function aggregateOverallResults(input: { cases: CaseStudy[] }): Aggregat
                 if (attempt.confidence === "Moderate") moderateConfidenceError++;
                 if (attempt.confidence === "Low") lowConfidenceError++;
               }
-            } else {
-              confidenceNotRecorded++;
             }
-
-          } else {
-            // Unanswered question
-            unanswered++;
-            conceptAttemptHistory[canonicalConceptId].push({
-              attempt: { questionId: q.id, isCorrect: false, answeredAt: session.completedAt || new Date().toISOString() } as QuestionAttempt,
-              conceptName: conceptLabel,
-              isUnanswered: true,
-              qId: q.id,
-              sessionId: session.id
-            });
           }
         });
       });
@@ -190,7 +171,7 @@ export function aggregateOverallResults(input: { cases: CaseStudy[] }): Aggregat
           if (a.confidence === "High") cHighConfError++;
         }
 
-        if (!a.confidence || a.confidence === "Not-recorded") {
+        if (!a.confidence) {
           cConfNotRecorded++;
         }
       }

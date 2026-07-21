@@ -1,7 +1,7 @@
 import { aggregateOverallResults } from "../lib/results/aggregateOverallResults";
 import { classifyConceptPerformance } from "../lib/results/classifyConceptPerformance";
 import { sortWeakConcepts } from "../lib/results/sortWeakConcepts";
-import { CaseStudy, QuestionAttempt, McqQuestion } from "../lib/types";
+import { CaseStudy, QuestionAttempt, McqQuestion } from "../lib/store";
 import { CombinedConceptPerformance } from "../lib/results/types";
 
 // Helper to quickly build mock cases
@@ -9,13 +9,10 @@ function buildMockCase(caseId: string, sessions: any[], mcqs: any[] = []): CaseS
   return {
     id: caseId,
     title: "Test Case",
-    status: "published",
-    patientAge: 40,
-    patientSex: "M",
+    content: "Content",
     mcqs: mcqs as McqQuestion[],
     practiceSessions: sessions,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: Date.now()
   };
 }
 
@@ -238,8 +235,8 @@ describe("Overall Results Aggregation Logic", () => {
     ], [{ id: "q1", primaryConceptId: "C1" }]);
     
     data.adaptiveDecisions = [{
-      id: "ad1", conceptId: "C1", recommendedDifficulty: "Intermediate", purpose: "Focus", evidenceAttemptIds: [], createdAt: new Date().toISOString()
-    }];
+      id: "ad1", conceptId: "C1", recommendedDifficulty: "Intermediate", purpose: "standard", evidenceAttemptIds: [], createdAt: new Date().toISOString()
+    } as any];
 
     const { allConcepts } = aggregateOverallResults({ cases: [data] });
     expect(allConcepts[0].availableAdaptiveDecisionId).toBe("ad1");
