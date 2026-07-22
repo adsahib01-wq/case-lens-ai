@@ -739,3 +739,9 @@ select[aria-invalid="true"] {
   background-color: rgba(99, 102, 241, 0.1);
   color: var(--accent-color);
 }
+
+@media (min-width: 769px) {
+  .hamburger-btn {
+    display: none !important;
+  }
+}
