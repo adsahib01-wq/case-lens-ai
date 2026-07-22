@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Drawer Simplification**: Removed the redundant header from the mobile navigation drawer, allowing the drawer to sit cleanly beneath the sticky navbar.
 - **Vanilla CSS Migration**: Reworked the mobile navigation layout by completely removing non-existent Tailwind utility classes and replacing them with robust, scalable Vanilla CSS.
 - **Results Mobile UI**: Optimized the Overall Results grid for narrow viewports. Restructured CSS into clean Desktop vs Mobile media query blocks. Tables now smoothly collapse into card-style lists with inline labels for maximum readability on small screens.
+- **History Mobile UI**: Fixed mobile card layout by enabling dynamic badge flex-wrapping and elegantly stacking header actions ("Clear All", "Start New Case") and footer actions ("Delete") to prevent horizontal squishing on extremely narrow phone screens.
 
 ## [1.3.1] - 2026-07-21
 ### Added
