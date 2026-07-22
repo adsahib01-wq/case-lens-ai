@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.caselensai.app",
+      "sha256_cert_fingerprints": [
+        "63:7E:B9:49:9C:2C:06:53:6F:8D:B6:D6:BD:B8:97:52:94:1D:4E:BD:99:A1:15:96:02:AD:E2:90:17:2D:92:29"
+      ]
+    }
+  }
+]
