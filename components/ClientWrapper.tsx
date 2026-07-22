@@ -59,27 +59,32 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
             <Link href="/about" className={pathname.startsWith("/about") ? "active" : ""}>About CaseLens AI</Link>
           </div>
           <button 
-            className="md:hidden btn btn-secondary" 
-            onClick={() => setMenuOpen(true)}
+            className={`md:hidden hamburger-btn ${menuOpen ? 'is-active' : ''}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
           >
-            Menu
+            <div className="hamburger-box">
+              <span className="hamburger-line"></span>
+              <span className="hamburger-line"></span>
+              <span className="hamburger-line"></span>
+            </div>
           </button>
         </nav>
 
         {/* SM-01 Mobile Navigation Drawer */}
         {menuOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end" style={{ backgroundColor: 'rgba(32,33,36,0.6)' }}>
-            <div className="w-64 h-full p-6 flex flex-col gap-4 border-l shadow-2xl overflow-y-auto" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--card-border)' }}>
-              <button className="btn btn-secondary self-end mb-4 text-sm px-4 py-2" onClick={() => setMenuOpen(false)}>
-                Close &times;
-              </button>
-              <Link href="/" className="btn btn-secondary w-full text-center justify-center">Home</Link>
-              <Link href="/new-case" className="btn btn-primary w-full text-center justify-center">Start New Case</Link>
-              <Link href="/history" className="btn btn-secondary w-full text-center justify-center">Case History</Link>
-              <Link href="/results" className="btn btn-secondary w-full text-center justify-center">Overall Results</Link>
-              <Link href="/about" className="btn btn-secondary w-full text-center justify-center">About CaseLens AI</Link>
-              <Link href="/safety" className="btn btn-secondary w-full text-center justify-center">Safety Guidelines</Link>
-              <Link href="/privacy" className="btn btn-secondary w-full text-center justify-center">Privacy Policy</Link>
+          <div className="drawer-overlay">
+            <div className="drawer-content">
+              <Link href="/" className={`drawer-link ${pathname === "/" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>Home</Link>
+              <Link href="/new-case" className={`drawer-link ${pathname.startsWith("/new-case") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>Start New Case</Link>
+              <Link href="/history" className={`drawer-link ${pathname.startsWith("/history") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>Case History</Link>
+              <Link href="/results" className={`drawer-link ${pathname.startsWith("/results") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>Overall Results</Link>
+              
+              <div style={{ margin: '1rem 0', borderTop: '1px solid var(--card-border)' }}></div>
+              
+              <Link href="/about" className={`drawer-link ${pathname.startsWith("/about") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>About CaseLens AI</Link>
+              <Link href="/safety" className={`drawer-link ${pathname.startsWith("/safety") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>Safety Guidelines</Link>
+              <Link href="/privacy" className={`drawer-link ${pathname.startsWith("/privacy") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>Privacy Policy</Link>
             </div>
           </div>
         )}

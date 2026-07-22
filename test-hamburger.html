@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 flex items-center justify-center h-screen">
+  
+  <div id="btn" class="relative w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer bg-red-500/20">
+    <div class="relative w-6 h-5 border border-green-500/30">
+      <span id="line1" class="absolute left-0 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out rotate-0 top-0"></span>
+      <span id="line2" class="absolute left-0 top-2 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out opacity-100 scale-100"></span>
+      <span id="line3" class="absolute left-0 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out rotate-0 top-4"></span>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const line1 = document.getElementById('line1');
+    const line2 = document.getElementById('line2');
+    const line3 = document.getElementById('line3');
+    let menuOpen = false;
+
+    btn.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      if(menuOpen) {
+        line1.className = "absolute left-0 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out rotate-45 top-2";
+        line2.className = "absolute left-0 top-2 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out opacity-0 scale-0";
+        line3.className = "absolute left-0 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out -rotate-45 top-2";
+      } else {
+        line1.className = "absolute left-0 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out rotate-0 top-0";
+        line2.className = "absolute left-0 top-2 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out opacity-100 scale-100";
+        line3.className = "absolute left-0 w-6 h-[2px] bg-current transform transition-all duration-300 ease-in-out rotate-0 top-4";
+      }
+    });
+  </script>
+</body>
+</html>
