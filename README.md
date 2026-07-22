@@ -87,6 +87,7 @@ Save or print educational reports
 | Master Weak Concepts Dashboard | Available | Cross-session aggregation |
 | Floating Notifications & Popups | Available | Unified `ToastProvider` & `ConfirmProvider` |
 | AI Resilience Engine | Available | Automatic error-recovery and retries |
+| Mobile Responsive Architecture | Available | Vanilla CSS fluid layouts & mobile tables |
 | IndexedDB migration | Planned | Replaces monolithic persistence |
 | Cloud synchronization | Future | Not currently available |
 | Medical source ingestion | Future | Requires licensing and review |

@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Advanced Learning Features:** Progressive Case Reveal, Pre-Answer Confidence Ratings, and Differential Diagnosis Builder.
 - **Phase-3 Cloud Sync:** Implement a local-first synchronization architecture for cross-device support.
 
+## [1.3.2] - 2026-07-22
+### Changed
+- **Mobile Navigation Overhaul**: Replaced the static SVG hamburger icon with a custom, fluid CSS-animated icon that dynamically transforms into a "Close" cross.
+- **Drawer Simplification**: Removed the redundant header from the mobile navigation drawer, allowing the drawer to sit cleanly beneath the sticky navbar.
+- **Vanilla CSS Migration**: Reworked the mobile navigation layout by completely removing non-existent Tailwind utility classes and replacing them with robust, scalable Vanilla CSS.
+- **Results Mobile UI**: Optimized the Overall Results grid for narrow viewports. Restructured CSS into clean Desktop vs Mobile media query blocks. Tables now smoothly collapse into card-style lists with inline labels for maximum readability on small screens.
+
 ## [1.3.1] - 2026-07-21
 ### Added
 - **Global UI Popups (`ConfirmProvider`)**: Completely eliminated all native browser alerts and confirms across the application, replacing them with a sleek, unified modal system that matches the application's aesthetic.
